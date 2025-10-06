@@ -1,10 +1,10 @@
 import { InventoryProvider } from "@/src/contexts/InventoryContext";
-import { DashboardScreen } from "@/src/screens/DashboardScreen";
+import { AnalyticsScreen } from "@/src/screens/AnalyticsScreen";
 
-export default function Dashboard() {
+export default function Analytics() {
   return (
     <InventoryProvider>
-      <DashboardScreen />
+      <AnalyticsScreen />
     </InventoryProvider>
   );
 }
