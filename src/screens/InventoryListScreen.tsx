@@ -15,7 +15,6 @@ import { getStockStatus, formatCurrency } from "../utils/stockUtils";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, View, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { categories } from "../data/mockData";
 import { useInventoryContext } from "../contexts/InventoryContext";
 
 enum SortByOptions {
@@ -27,8 +26,9 @@ enum SortByOptions {
 export const InventoryListScreen = (): JSX.Element => {
   const theme = useTheme();
   const router = useRouter();
-  const { inventory: items } = useInventoryContext();
-  console.log(items);
+  const { inventory: items, categories = [] } = useInventoryContext();
+  console.log("Items:", items);
+  console.log("Categories in InventoryListScreen:", categories);
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -163,22 +163,25 @@ export const InventoryListScreen = (): JSX.Element => {
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={[{ id: "", name: "All" }, ...categories]}
+            data={[{ id: "", category_name: "All" }, ...categories]}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <Chip
-                selected={
-                  selectedCategory === item.name ||
-                  (item.name === "All" && !selectedCategory)
-                }
-                onPress={() =>
-                  setSelectedCategory(item.name === "All" ? "" : item.name)
-                }
-                style={styles.categoryChip}
-              >
-                {item.name}
-              </Chip>
-            )}
+            renderItem={({ item }) => {
+              console.log("Rendering category chip in list:", item);
+              return (
+                <Chip
+                  selected={
+                    selectedCategory === item.category_name ||
+                    (item.category_name === "All" && !selectedCategory)
+                  }
+                  onPress={() =>
+                    setSelectedCategory(item.category_name === "All" ? "" : item.category_name)
+                  }
+                  style={styles.categoryChip}
+                >
+                  {item.category_name}
+                </Chip>
+              );
+            }}
           />
 
           <Menu
