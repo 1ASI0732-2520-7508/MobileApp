@@ -212,49 +212,51 @@ export const AddEditItemScreen = ({
               <TextInput
                 label="Current Quantity"
                 value={
-                  /* This prevents the value set to NaN */
-                  formData.current_quantity.toString()
-                    ? formData.current_quantity.toString()
-                    : "0"
+                  formData.current_quantity === 0 && !item
+                    ? ""
+                    : formData.current_quantity.toString()
                 }
                 onChangeText={(text) =>
                   setFormData({
                     ...formData,
-                    current_quantity: text ? parseInt(text) : 0,
+                    current_quantity: text ? parseInt(text, 10) : 0,
                   })
                 }
                 mode="outlined"
                 keyboardType="numeric"
+                placeholder="0"
                 style={[styles.input, styles.halfWidth]}
               />
 
               <TextInput
                 label="Minimum Stock"
                 value={
-                  formData.minimum_stock_level.toString()
-                    ? formData.minimum_stock_level.toString()
-                    : "0"
+                  formData.minimum_stock_level === 0 && !item
+                    ? ""
+                    : formData.minimum_stock_level.toString()
                 }
                 onChangeText={(text) =>
                   setFormData({
                     ...formData,
-                    minimum_stock_level: text ? parseInt(text) : 0,
+                    minimum_stock_level: text ? parseInt(text, 10) : 0,
                   })
                 }
                 mode="outlined"
                 keyboardType="numeric"
+                placeholder="0"
                 style={[styles.input, styles.halfWidth]}
               />
             </View>
 
             <TextInput
               label="Unit Price"
-              value={formData.unit_price || "0"}
+              value={formData.unit_price || ""}
               onChangeText={(text) =>
                 setFormData({ ...formData, unit_price: text })
               }
               mode="outlined"
               keyboardType="decimal-pad"
+              placeholder="0.00"
               left={<TextInput.Icon icon="currency-usd" />}
               style={styles.input}
             />
