@@ -6,10 +6,10 @@ import {
   TextInput,
   Button,
   Card,
-  SegmentedButtons,
+  Chip,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { Alert, StyleSheet, View, ScrollView } from "react-native";
+import { Alert, StyleSheet, View, ScrollView, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useInventoryContext } from "../contexts/InventoryContext";
 
@@ -64,18 +64,25 @@ export const AddEditItemScreen = ({
     if (!item && categories.length) {
       setFormData((prev) => ({
         ...prev,
-        category_name: prev.category_name || categories[0].name,
+        category_name: prev.category_name || categories[0].category_name,
       }));
     }
   }, [categories, item]);
 
   useEffect(() => {
+    console.log("Categories in AddEditItemScreen:", categories);
     if (!categories.length) {
       refreshCategories().catch((error) =>
         console.warn("Failed to refresh categories", error),
       );
+    } else if (!item && !formData.category_name && categories.length > 0) {
+      // Set first category as default for new items
+      setFormData((prev) => ({
+        ...prev,
+        category_name: categories[0].category_name,
+      }));
     }
-  }, [categories.length, refreshCategories]);
+  }, [categories.length, refreshCategories, item]);
 
   useEffect(() => {
     if (!suppliers.length) {
@@ -101,7 +108,7 @@ export const AddEditItemScreen = ({
 
     if (
       categories.length &&
-      !categories.some((cat) => cat.name === formData.category_name)
+      !categories.some((cat) => cat.category_name === formData.category_name)
     ) {
       Alert.alert(
         "Validation Error",
@@ -138,10 +145,6 @@ export const AddEditItemScreen = ({
     }
   };
 
-  const categoryButtons = categories.map((cat) => ({
-    value: cat.name,
-    label: cat.name,
-  }));
 
   return (
     <SafeAreaView
@@ -163,16 +166,40 @@ export const AddEditItemScreen = ({
             <Text
               style={[styles.sectionLabel, { color: theme.colors.onSurface }]}
             >
-              Category
+              Category * ({categories.length} available)
             </Text>
-            <SegmentedButtons
-              value={formData.category_name}
-              onValueChange={(value) =>
-                setFormData({ ...formData, category_name: value })
-              }
-              buttons={categoryButtons}
-              style={styles.categoryButtons}
-            />
+            <View style={styles.categoryContainer}>
+              {categories.length > 0 ? (
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={categories}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => {
+                    console.log("Rendering category chip:", item);
+                    return (
+                      <Chip
+                        selected={formData.category_name === item.category_name}
+                        onPress={() => {
+                          console.log("Category selected:", item.category_name);
+                          setFormData({ ...formData, category_name: item.category_name });
+                        }}
+                        style={styles.categoryChip}
+                        mode="outlined"
+                        textStyle={styles.chipText}
+                      >
+                        {item.category_name}
+                      </Chip>
+                    );
+                  }}
+                  contentContainerStyle={styles.categoryList}
+                />
+              ) : (
+                <Text style={{ color: theme.colors.onSurfaceVariant }}>
+                  No categories available
+                </Text>
+              )}
+            </View>
 
             <View style={styles.row}>
               <TextInput
@@ -287,14 +314,25 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
   },
+  categoryContainer: {
+    marginBottom: 16,
+  },
+  categoryList: {
+    paddingVertical: 4,
+  },
+  categoryChip: {
+    marginRight: 8,
+    height: 40,
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
   sectionLabel: {
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 8,
     marginTop: 8,
-  },
-  categoryButtons: {
-    marginBottom: 16,
   },
   row: {
     flexDirection: "row",

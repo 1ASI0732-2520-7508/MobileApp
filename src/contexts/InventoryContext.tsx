@@ -152,7 +152,7 @@ export const InventoryProvider = ({
         suppliers.length > 0 ? suppliers : ((await fetchSuppliers()) ?? []);
 
       const categoryObject = currentCategories.find(
-        (cat) => cat.name === item.category_name,
+        (cat) => cat.category_name === item.category_name,
       );
       const supplierObject = currentSuppliers.find(
         (sup) => sup.supplier_name === item.supplier_name,
@@ -164,7 +164,7 @@ export const InventoryProvider = ({
           supplierObject,
           item_category_name: item.category_name,
           item_supplier_name: item.supplier_name,
-          available_categories: currentCategories.map(c => c.name),
+          available_categories: currentCategories.map(c => c.category_name),
           available_suppliers: currentSuppliers.map(s => s.supplier_name),
         });
         throw new Error(
