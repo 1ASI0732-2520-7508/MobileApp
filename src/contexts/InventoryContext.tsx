@@ -57,7 +57,9 @@ export const InventoryProvider = ({
     backendApi.setJwtToken(storedToken ?? "");
   }, []);
 
-  const fetchSuppliers = useCallback(async (): Promise<Supplier[] | undefined> => {
+  const fetchSuppliers = useCallback(async (): Promise<
+    Supplier[] | undefined
+  > => {
     try {
       await ensureAuthHeader();
       const response = await backendApi.getSuppliers();
@@ -77,7 +79,9 @@ export const InventoryProvider = ({
     }
   }, [ensureAuthHeader]);
 
-  const fetchCategories = useCallback(async (): Promise<Category[] | undefined> => {
+  const fetchCategories = useCallback(async (): Promise<
+    Category[] | undefined
+  > => {
     try {
       await ensureAuthHeader();
       const response = await backendApi.getCategories();
@@ -164,11 +168,11 @@ export const InventoryProvider = ({
           supplierObject,
           item_category_name: item.category_name,
           item_supplier_name: item.supplier_name,
-          available_categories: currentCategories.map(c => c.category_name),
-          available_suppliers: currentSuppliers.map(s => s.supplier_name),
+          available_categories: currentCategories.map((c) => c.category_name),
+          available_suppliers: currentSuppliers.map((s) => s.supplier_name),
         });
         throw new Error(
-          `${!categoryObject ? "Category" : ""} ${!categoryObject && !supplierObject ? "and " : ""} ${!supplierObject ? "Supplier" : ""} not found`
+          `${!categoryObject ? "Category" : ""} ${!categoryObject && !supplierObject ? "and " : ""} ${!supplierObject ? "Supplier" : ""} not found`,
         );
       }
 
@@ -195,7 +199,7 @@ export const InventoryProvider = ({
           category: categoryObject.id,
         };
         console.log("Creating item with data:", itemToCreate);
-        
+
         await backendApi.createInventoryItem(itemToCreate);
         await fetchInventoryItems();
       } catch (error) {
@@ -234,7 +238,7 @@ export const InventoryProvider = ({
           category: categoryObject.id,
         };
         console.log("Updating item with id:", itemId, "data:", itemToUpdate);
-        
+
         await backendApi.updateInventoryItem(itemId, itemToUpdate);
         await fetchInventoryItems();
       } catch (error) {
@@ -254,32 +258,35 @@ export const InventoryProvider = ({
     [ensureAuthHeader, fetchInventoryItems, resolveCategoryAndSupplier],
   );
 
-  const deleteInventoryItem = useCallback(async (itemId: string) => {
-    try {
-      await ensureAuthHeader();
-      console.log("Deleting item with id:", itemId);
-      await backendApi.deleteInventoryItem(itemId);
-      setInventory((prev) =>
-        prev?.filter((item) => item.id !== parseInt(itemId, 10)),
-      );
-      console.log("Item deleted successfully");
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Axios error details:", {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          url: error.config?.url,
-          method: error.config?.method,
-          data: error.response?.data,
-        });
+  const deleteInventoryItem = useCallback(
+    async (itemId: string) => {
+      try {
+        await ensureAuthHeader();
+        console.log("Deleting item with id:", itemId);
+        await backendApi.deleteInventoryItem(itemId);
+        setInventory((prev) =>
+          prev?.filter((item) => item.id !== parseInt(itemId, 10)),
+        );
+        console.log("Item deleted successfully");
+      } catch (error) {
+        console.error("Error deleting item:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("Axios error details:", {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            url: error.config?.url,
+            method: error.config?.method,
+            data: error.response?.data,
+          });
+        }
+        throw error;
       }
-      throw error;
-    }
-  }, [ensureAuthHeader]);
+    },
+    [ensureAuthHeader],
+  );
 
   return (
-    <InventoryContext
+    <InventoryContext.Provider
       value={{
         inventory,
         categories,
@@ -293,7 +300,7 @@ export const InventoryProvider = ({
       }}
     >
       {children}
-    </InventoryContext>
+    </InventoryContext.Provider>
   );
 };
 

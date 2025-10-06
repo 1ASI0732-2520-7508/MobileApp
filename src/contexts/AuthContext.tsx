@@ -135,11 +135,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     }
   };
 
-  // not need to use AuthContext.Provider, just AuthContext in react 19
   return (
-    <AuthContext value={{ ...authState, login, logout }}>
+    <AuthContext.Provider value={{ ...authState, login, logout }}>
       {children}
-    </AuthContext>
+    </AuthContext.Provider>
   );
 };
 
