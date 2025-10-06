@@ -18,11 +18,14 @@ export class BaseEndpoint<T> {
   }
 
   create(resource: Partial<T>) {
+    console.log(`POST ${this.endpointPath}`, resource);
     return this.baseApi.post(this.endpointPath, resource);
   }
 
   update(id: string, resource: Partial<T>) {
-    return this.baseApi.put(`${this.endpointPath}/${id}`, resource);
+    const url = `${this.endpointPath}${id}/`;
+    console.log(`PUT ${url}`, resource);
+    return this.baseApi.put(url, resource);
   }
 
   delete(id: string) {

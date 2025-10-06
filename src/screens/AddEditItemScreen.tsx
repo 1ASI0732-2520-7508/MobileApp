@@ -9,7 +9,6 @@ import {
   SegmentedButtons,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { categories } from "../data/mockData";
 import { Alert, StyleSheet, View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useInventoryContext } from "../contexts/InventoryContext";
@@ -23,42 +22,119 @@ export const AddEditItemScreen = ({
 }: AddEditItemScreenProps): JSX.Element => {
   const theme = useTheme();
   const router = useRouter();
-  const { addInventoryItem, editInventoryItem } = useInventoryContext();
+  const {
+    addInventoryItem,
+    editInventoryItem,
+    categories = [],
+    suppliers = [],
+    refreshCategories,
+    refreshSuppliers,
+  } = useInventoryContext();
 
   const isEditing = !!item; // Convert the existence of item to a boolean
 
   const [formData, setFormData] = useState<
-    Omit<InventoryItem, "id" | "lastUpdated">
+    Omit<InventoryItem, "id" | "lastUpdated" | "supplier" | "category">
   >({
     item_name: "",
     description: "",
     current_quantity: 0,
     unit_price: "",
-    category_name: categories[0]?.name || "",
+    category_name: "",
     supplier_name: "",
     minimum_stock_level: 0,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (item) {
-      setFormData({ ...item });
+      setFormData({
+        item_name: item.item_name,
+        description: item.description,
+        current_quantity: item.current_quantity,
+        unit_price: item.unit_price,
+        category_name: item.category_name,
+        supplier_name: item.supplier_name,
+        minimum_stock_level: item.minimum_stock_level,
+      });
     }
   }, [item]);
 
-  const handleSave = () => {
+  useEffect(() => {
+    if (!item && categories.length) {
+      setFormData((prev) => ({
+        ...prev,
+        category_name: prev.category_name || categories[0].name,
+      }));
+    }
+  }, [categories, item]);
+
+  useEffect(() => {
+    if (!categories.length) {
+      refreshCategories().catch((error) =>
+        console.warn("Failed to refresh categories", error),
+      );
+    }
+  }, [categories.length, refreshCategories]);
+
+  useEffect(() => {
+    if (!suppliers.length) {
+      refreshSuppliers().catch((error) =>
+        console.warn("Failed to refresh suppliers", error),
+      );
+    }
+  }, [refreshSuppliers, suppliers.length]);
+
+  const handleSave = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
     if (!formData.item_name.trim()) {
       Alert.alert("Validation Error", "Item name is required.");
+      return;
     }
     if (!formData.supplier_name.trim()) {
       Alert.alert("Validation Error", "Supplier name is required.");
+      return;
     }
 
-    if (isEditing && item) {
-      editInventoryItem(item.id.toString(), formData);
+    if (
+      categories.length &&
+      !categories.some((cat) => cat.name === formData.category_name)
+    ) {
+      Alert.alert(
+        "Validation Error",
+        "Please select a valid category before saving.",
+      );
+      return;
+    }
+
+    if (
+      suppliers.length &&
+      !suppliers.some((sup) => sup.supplier_name === formData.supplier_name)
+    ) {
+      Alert.alert(
+        "Validation Error",
+        "Please select a valid supplier before saving.",
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (isEditing && item) {
+        await editInventoryItem(item.id.toString(), formData);
+      } else {
+        await addInventoryItem(formData);
+      }
       router.back();
-    } else {
-      addInventoryItem(formData);
-      router.back();
+    } catch (error) {
+      console.error("Failed to save item", error);
+      Alert.alert("Error", "Failed to save item. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -178,6 +254,8 @@ export const AddEditItemScreen = ({
             mode="contained"
             onPress={handleSave}
             style={styles.saveButton}
+            loading={isSubmitting}
+            disabled={isSubmitting}
             icon={isEditing ? "content-save" : "plus"}
           >
             {isEditing ? "Update Item" : "Add Item"}

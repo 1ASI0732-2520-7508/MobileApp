@@ -3,6 +3,15 @@ import { BaseEndpoint } from "./base-endpoint";
 import { Category, InventoryItem, Supplier } from "../types/inventory";
 import { LoginCredentials } from "../types/auth";
 
+const AUTH_ENDPOINT_PATH =
+  process.env.EXPO_PUBLIC_AUTH_TOKEN_ENDPOINT ?? "/auth/token/";
+const SUPPLIERS_ENDPOINT_PATH =
+  process.env.EXPO_PUBLIC_SUPPLIERS_ENDPOINT ?? "/suppliers/";
+const INVENTORY_ITEMS_ENDPOINT_PATH =
+  process.env.EXPO_PUBLIC_ITEMS_ENDPOINT ?? "/items/";
+const CATEGORIES_ENDPOINT_PATH =
+  process.env.EXPO_PUBLIC_CATEGORIES_ENDPOINT ?? "/categories/";
+
 export class BackendApi extends BaseApi {
   #authTokenEndpoint: BaseEndpoint<LoginCredentials>;
   #suppliersEndpoint: BaseEndpoint<Supplier>;
@@ -13,19 +22,19 @@ export class BackendApi extends BaseApi {
     super();
     this.#authTokenEndpoint = new BaseEndpoint<LoginCredentials>(
       this.http,
-      "/auth/token/",
+      AUTH_ENDPOINT_PATH,
     );
     this.#suppliersEndpoint = new BaseEndpoint<Supplier>(
       this.httpWithAuthToken,
-      "/suppliers/",
+      SUPPLIERS_ENDPOINT_PATH,
     );
     this.#inventoryItemsEndpoint = new BaseEndpoint<InventoryItem>(
       this.httpWithAuthToken,
-      "/items/",
+      INVENTORY_ITEMS_ENDPOINT_PATH,
     );
     this.#catergoriesEndpoint = new BaseEndpoint<Category>(
       this.httpWithAuthToken,
-      "/categories/",
+      CATEGORIES_ENDPOINT_PATH,
     );
   }
 
@@ -66,14 +75,14 @@ export class BackendApi extends BaseApi {
   }
 
   createInventoryItem(
-    resource: Omit<InventoryItem, "id" | "supplierName" | "categoryName">,
+    resource: Omit<InventoryItem, "id" | "supplier_name" | "category_name">,
   ) {
     return this.#inventoryItemsEndpoint.create(resource);
   }
 
   updateInventoryItem(
     id: string,
-    resource: Omit<InventoryItem, "id" | "supplierName" | "categoryName">,
+    resource: Omit<InventoryItem, "id" | "supplier_name" | "category_name">,
   ) {
     return this.#inventoryItemsEndpoint.update(id, resource);
   }
