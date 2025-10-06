@@ -104,33 +104,51 @@ export const AddEditItemScreen = ({
       return;
     }
 
+    // Validate required fields
+    const errors: string[] = [];
+
     if (!formData.item_name.trim()) {
-      Alert.alert("Validation Error", "Item name is required.");
-      return;
-    }
-    if (!formData.supplier_name.trim()) {
-      Alert.alert("Validation Error", "Supplier name is required.");
-      return;
+      errors.push("Item name is required");
     }
 
-    if (
+    if (!formData.category_name.trim()) {
+      errors.push("Category is required");
+    } else if (
       categories.length &&
       !categories.some((cat) => cat.category_name === formData.category_name)
     ) {
-      Alert.alert(
-        "Validation Error",
-        "Please select a valid category before saving.",
-      );
-      return;
+      errors.push("Please select a valid category");
     }
 
-    if (
+    if (!formData.supplier_name.trim()) {
+      errors.push("Supplier is required");
+    } else if (
       suppliers.length &&
       !suppliers.some((sup) => sup.supplier_name === formData.supplier_name)
     ) {
+      errors.push("Please select a valid supplier");
+    }
+
+    if (!formData.unit_price || formData.unit_price.trim() === "") {
+      errors.push("Unit price is required");
+    } else if (isNaN(parseFloat(formData.unit_price)) || parseFloat(formData.unit_price) < 0) {
+      errors.push("Unit price must be a valid positive number");
+    }
+
+    if (formData.current_quantity < 0) {
+      errors.push("Current quantity cannot be negative");
+    }
+
+    if (formData.minimum_stock_level < 0) {
+      errors.push("Minimum stock level cannot be negative");
+    }
+
+    // Show validation errors if any
+    if (errors.length > 0) {
       Alert.alert(
         "Validation Error",
-        "Please select a valid supplier before saving.",
+        errors.join("\n"),
+        [{ text: "OK" }]
       );
       return;
     }
