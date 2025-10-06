@@ -14,7 +14,9 @@ export class BaseEndpoint<T> {
   }
 
   getById(id: string) {
-    return this.baseApi.get(`${this.endpointPath}/${id}`);
+    const url = `${this.endpointPath}${id}/`;
+    console.log(`GET ${url}`);
+    return this.baseApi.get(url);
   }
 
   create(resource: Partial<T>) {
@@ -29,6 +31,8 @@ export class BaseEndpoint<T> {
   }
 
   delete(id: string) {
-    return this.baseApi.delete(`${this.endpointPath}/${id}`);
+    const url = `${this.endpointPath}${id}/`;
+    console.log(`DELETE ${url}`);
+    return this.baseApi.delete(url);
   }
 }

@@ -257,12 +257,23 @@ export const InventoryProvider = ({
   const deleteInventoryItem = useCallback(async (itemId: string) => {
     try {
       await ensureAuthHeader();
+      console.log("Deleting item with id:", itemId);
       await backendApi.deleteInventoryItem(itemId);
       setInventory((prev) =>
         prev?.filter((item) => item.id !== parseInt(itemId, 10)),
       );
+      console.log("Item deleted successfully");
     } catch (error) {
-      console.log("Error deleting item", error);
+      console.error("Error deleting item:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error details:", {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          url: error.config?.url,
+          method: error.config?.method,
+          data: error.response?.data,
+        });
+      }
       throw error;
     }
   }, [ensureAuthHeader]);

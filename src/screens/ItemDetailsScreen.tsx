@@ -52,15 +52,22 @@ export const ItemDetailsScreen = ({
         ? theme.colors.tertiary
         : theme.colors.error;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => {
-          deleteInventoryItem(item.id.toString());
-          router.back();
+        onPress: async () => {
+          try {
+            await deleteInventoryItem(item.id.toString());
+            router.back();
+          } catch (error) {
+            Alert.alert(
+              "Delete Failed",
+              "Failed to delete the item. Please try again."
+            );
+          }
         },
       },
     ]);
