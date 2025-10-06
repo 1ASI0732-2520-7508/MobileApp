@@ -1,9 +1,19 @@
+import { useAuth } from "@/src/contexts/AuthContext";
 import { InventoryProvider } from "@/src/contexts/InventoryContext";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import { useEffect } from "react";
 import { useTheme } from "react-native-paper";
 
 export default function InventoryLayout() {
   const theme = useTheme();
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace("/auth");
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   return (
     <InventoryProvider>

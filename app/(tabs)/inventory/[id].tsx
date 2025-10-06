@@ -6,7 +6,7 @@ export default function ItemDetails() {
   const { id } = useLocalSearchParams();
   const { inventory: items } = useInventoryContext();
 
-  const item = items.find((item) => item.id === id);
+  const item = items?.find((item) => item.id.toString() === id);
 
   if (!item) {
     return null;

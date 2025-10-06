@@ -10,11 +10,9 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { Alert, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 
 export const ProfileScreen = () => {
   const theme = useTheme();
-  const router = useRouter();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -23,9 +21,12 @@ export const ProfileScreen = () => {
       {
         text: "Logout",
         style: "destructive",
-        onPress: () => {
-          logout();
-          router.replace("/");
+        onPress: async () => {
+          try {
+            logout();
+          } catch (error) {
+            console.warn("Logout failed:", error);
+          }
         },
       },
     ]);
@@ -42,14 +43,14 @@ export const ProfileScreen = () => {
           <Card.Content>
             <Avatar.Text
               size={80}
-              label={user.name
+              label={user.username
                 .split(" ")
                 .map((n) => n[0])
                 .join("")}
               style={{ backgroundColor: theme.colors.primary }}
             />
             <Text style={[styles.userName, { color: theme.colors.onSurface }]}>
-              {user.name}
+              {user.username}
             </Text>
             <Text
               style={[
@@ -60,7 +61,7 @@ export const ProfileScreen = () => {
               {user.email}
             </Text>
             <Text style={[styles.userRole, { color: theme.colors.primary }]}>
-              {user.role.toUpperCase()}
+              {user.group.toUpperCase()}
             </Text>
           </Card.Content>
         </Card>
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   menuCard: {
-    marginBottom: 24,
+    marginVertical: 24,
   },
   logoutButton: {
     borderColor: "#EF4444",

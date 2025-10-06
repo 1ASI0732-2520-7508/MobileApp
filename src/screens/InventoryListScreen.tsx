@@ -36,22 +36,22 @@ export const InventoryListScreen = (): JSX.Element => {
   const [sortBy, setSortBy] = useState<SortByOptions>(SortByOptions.Name);
 
   const filteredItems = items
-    .filter((item) => {
+    ?.filter((item) => {
       const matchesSearch: boolean =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory: boolean =
-        !selectedCategory || item.category === selectedCategory;
+        !selectedCategory || item.category_name === selectedCategory;
       return matchesSearch && matchesCategory;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case SortByOptions.Name:
-          return a.name.localeCompare(b.name);
+          return a.category_name.localeCompare(b.category_name);
         case SortByOptions.Quantity:
-          return b.quantity - a.quantity;
+          return b.current_quantity - a.current_quantity;
         case SortByOptions.Price:
-          return b.price - a.price;
+          return parseFloat(b.unit_price) - parseFloat(a.unit_price);
         default:
           return 0;
       }
@@ -73,7 +73,7 @@ export const InventoryListScreen = (): JSX.Element => {
         <Card.Content>
           <View style={styles.itemHeader}>
             <Text style={[styles.itemName, { color: theme.colors.onSurface }]}>
-              {item.name}
+              {item.item_name}
             </Text>
             <Chip
               mode="outlined"
@@ -123,7 +123,7 @@ export const InventoryListScreen = (): JSX.Element => {
                   { color: theme.colors.onSurfaceVariant },
                 ]}
               >
-                {item.quantity} units
+                {item.current_quantity} units
               </Text>
             </View>
 
@@ -139,7 +139,7 @@ export const InventoryListScreen = (): JSX.Element => {
                   { color: theme.colors.onSurfaceVariant },
                 ]}
               >
-                {formatCurrency(item.price)}
+                {formatCurrency(parseFloat(item.unit_price))}
               </Text>
             </View>
           </View>
@@ -164,7 +164,7 @@ export const InventoryListScreen = (): JSX.Element => {
             horizontal
             showsHorizontalScrollIndicator={false}
             data={[{ id: "", name: "All" }, ...categories]}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <Chip
                 selected={
@@ -223,7 +223,7 @@ export const InventoryListScreen = (): JSX.Element => {
       <FlatList
         data={filteredItems}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />

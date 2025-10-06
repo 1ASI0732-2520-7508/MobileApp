@@ -23,20 +23,20 @@ export const AddEditItemScreen = ({
 }: AddEditItemScreenProps): JSX.Element => {
   const theme = useTheme();
   const router = useRouter();
-  const { addItem, editItem } = useInventoryContext();
+  const { addInventoryItem, editInventoryItem } = useInventoryContext();
 
   const isEditing = !!item; // Convert the existence of item to a boolean
 
   const [formData, setFormData] = useState<
     Omit<InventoryItem, "id" | "lastUpdated">
   >({
-    name: "",
+    item_name: "",
     description: "",
-    quantity: 0,
-    price: 0,
-    category: categories[0]?.name || "",
-    supplier: "",
-    minStock: 0,
+    current_quantity: 0,
+    unit_price: "",
+    category_name: categories[0]?.name || "",
+    supplier_name: "",
+    minimum_stock_level: 0,
   });
 
   useEffect(() => {
@@ -46,18 +46,18 @@ export const AddEditItemScreen = ({
   }, [item]);
 
   const handleSave = () => {
-    if (!formData.name.trim()) {
+    if (!formData.item_name.trim()) {
       Alert.alert("Validation Error", "Item name is required.");
     }
-    if (!formData.supplier.trim()) {
+    if (!formData.supplier_name.trim()) {
       Alert.alert("Validation Error", "Supplier name is required.");
     }
 
     if (isEditing && item) {
-      editItem(item.id, formData);
+      editInventoryItem(item.id.toString(), formData);
       router.back();
     } else {
-      addItem(formData);
+      addInventoryItem(formData);
       router.back();
     }
   };
@@ -76,8 +76,10 @@ export const AddEditItemScreen = ({
           <Card.Content>
             <TextInput
               label="Item Name *"
-              value={formData.name}
-              onChangeText={(text) => setFormData({ ...formData, name: text })}
+              value={formData.item_name}
+              onChangeText={(text) =>
+                setFormData({ ...formData, item_name: text })
+              }
               mode="outlined"
               style={styles.input}
             />
@@ -88,9 +90,9 @@ export const AddEditItemScreen = ({
               Category
             </Text>
             <SegmentedButtons
-              value={formData.category}
+              value={formData.category_name}
               onValueChange={(value) =>
-                setFormData({ ...formData, category: value })
+                setFormData({ ...formData, category_name: value })
               }
               buttons={categoryButtons}
               style={styles.categoryButtons}
@@ -101,14 +103,14 @@ export const AddEditItemScreen = ({
                 label="Current Quantity"
                 value={
                   /* This prevents the value set to NaN */
-                  formData.quantity.toString()
-                    ? formData.quantity.toString()
+                  formData.current_quantity.toString()
+                    ? formData.current_quantity.toString()
                     : "0"
                 }
                 onChangeText={(text) =>
                   setFormData({
                     ...formData,
-                    quantity: text ? parseInt(text) : 0,
+                    current_quantity: text ? parseInt(text) : 0,
                   })
                 }
                 mode="outlined"
@@ -119,14 +121,14 @@ export const AddEditItemScreen = ({
               <TextInput
                 label="Minimum Stock"
                 value={
-                  formData.minStock.toString()
-                    ? formData.minStock.toString()
+                  formData.minimum_stock_level.toString()
+                    ? formData.minimum_stock_level.toString()
                     : "0"
                 }
                 onChangeText={(text) =>
                   setFormData({
                     ...formData,
-                    minStock: text ? parseInt(text) : 0,
+                    minimum_stock_level: text ? parseInt(text) : 0,
                   })
                 }
                 mode="outlined"
@@ -137,11 +139,9 @@ export const AddEditItemScreen = ({
 
             <TextInput
               label="Unit Price"
-              value={
-                formData.price.toString() ? formData.price.toString() : "0"
-              }
+              value={formData.unit_price || "0"}
               onChangeText={(text) =>
-                setFormData({ ...formData, price: text ? parseFloat(text) : 0 })
+                setFormData({ ...formData, unit_price: text })
               }
               mode="outlined"
               keyboardType="decimal-pad"
@@ -151,9 +151,9 @@ export const AddEditItemScreen = ({
 
             <TextInput
               label="Supplier *"
-              value={formData.supplier}
+              value={formData.supplier_name}
               onChangeText={(text) =>
-                setFormData({ ...formData, supplier: text })
+                setFormData({ ...formData, supplier_name: text })
               }
               mode="outlined"
               style={styles.input}

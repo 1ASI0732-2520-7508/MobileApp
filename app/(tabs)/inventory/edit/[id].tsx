@@ -6,7 +6,7 @@ export default function EditItem() {
   const { id } = useLocalSearchParams();
   const { inventory: items } = useInventoryContext();
 
-  const item = items.find((item) => item.id === id);
+  const item = items?.find((item) => item?.id.toString() === id);
 
   return <AddEditItemScreen item={item} />;
 }

@@ -18,13 +18,13 @@ export const LoginScreen = () => {
   const theme = useTheme();
   const { login, isLoading } = useAuth();
   const [credentials, setCredentials] = useState<LoginCredentials>({
-    email: "",
+    username: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    if (!credentials.email || !credentials.password) {
+    if (!credentials.username || !credentials.password) {
       Alert.alert("Error", "Please enter email and password");
     }
 
@@ -68,9 +68,9 @@ export const LoginScreen = () => {
           <Card.Content>
             <TextInput
               label="Email Address"
-              value={credentials.email}
+              value={credentials.username}
               onChangeText={(text) =>
-                setCredentials({ ...credentials, email: text })
+                setCredentials({ ...credentials, username: text })
               }
               mode="outlined"
               keyboardType="email-address"

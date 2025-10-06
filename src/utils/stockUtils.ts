@@ -1,8 +1,9 @@
 import { InventoryItem, ValidStockStatus } from "../types/inventory";
 
 export const getStockStatus = (item: InventoryItem): ValidStockStatus => {
-  if (item.quantity === 0) return ValidStockStatus.OutOfStock;
-  if (item.quantity <= item.minStock) return ValidStockStatus.LowStock;
+  if (item.current_quantity === 0) return ValidStockStatus.OutOfStock;
+  if (item.current_quantity <= item.minimum_stock_level)
+    return ValidStockStatus.LowStock;
   return ValidStockStatus.InStock;
 };
 

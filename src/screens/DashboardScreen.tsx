@@ -1,6 +1,6 @@
 import { JSX } from "react";
 import { Text, Card, useTheme } from "react-native-paper";
-import useInvetory from "../hooks/useInventory";
+import { useInventoryContext } from "../contexts/InventoryContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getStockStatus, formatCurrency } from "../utils/stockUtils";
 import { ValidStockStatus } from "../types/inventory";
@@ -10,24 +10,24 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export const DashboardScreen = (): JSX.Element => {
   const theme = useTheme();
-  const { items } = useInvetory();
+  const { inventory: items } = useInventoryContext();
 
-  const totalItems: number = items.length;
+  const totalItems = items?.length;
 
-  const totalUnits: number = items.reduce(
-    (sum, item) => sum + item.quantity,
+  const totalUnits = items?.reduce(
+    (sum, item) => sum + item.current_quantity,
     0,
   );
-  const totalValue: number = items.reduce(
-    (sum, item) => sum + item.quantity * item.price,
+  const totalValue = items?.reduce(
+    (sum, item) => sum + item.current_quantity * parseFloat(item.unit_price),
     0,
   );
 
-  const lowStockItems: number = items.filter(
+  const lowStockItems = items?.filter(
     (item) => getStockStatus(item) === ValidStockStatus.LowStock,
   ).length;
 
-  const outOfStockItems: number = items.filter(
+  const outOfStockItems = items?.filter(
     (item) => getStockStatus(item) === ValidStockStatus.OutOfStock,
   ).length;
 
@@ -93,13 +93,13 @@ export const DashboardScreen = (): JSX.Element => {
               Recent Items
             </Text>
 
-            {items.slice(0, 5).map((item) => (
+            {items?.slice(0, 5).map((item) => (
               <View key={item.id} style={styles.recentItem}>
                 <View style={styles.recentItemInfo}>
                   <Text
                     style={[styles.itemName, { color: theme.colors.onSurface }]}
                   >
-                    {item.name}
+                    {item.item_name}
                   </Text>
                   <Text
                     style={[
@@ -107,7 +107,8 @@ export const DashboardScreen = (): JSX.Element => {
                       { color: theme.colors.onSurfaceVariant },
                     ]}
                   >
-                    {item.quantity} units • {formatCurrency(item.price)}
+                    {item.current_quantity} units •{" "}
+                    {formatCurrency(parseFloat(item.unit_price))}
                   </Text>
                 </View>
                 <View

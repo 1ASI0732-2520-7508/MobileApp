@@ -1,17 +1,18 @@
-import { createContext, JSX, useContext, useState } from "react";
-import { InventoryItem, Category } from "../types/inventory";
-import { inventoryItems as initialInventory } from "../data/mockData";
+import { createContext, JSX, useContext, useEffect, useState } from "react";
+import { InventoryItem, Category, Supplier } from "../types/inventory";
+import backendApi from "../infrastructure/backend-api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface InventoryContextType {
-  inventory: InventoryItem[];
+  inventory?: InventoryItem[];
   categories?: Category[];
-  addItem: (item: Omit<InventoryItem, "id" | "lastUpdated">) => void;
-  updateItem: (item: InventoryItem) => void;
-  deleteItem: (id: string) => void;
-  editItem: (
+  suppliers?: Supplier[];
+  addInventoryItem: (item: Omit<InventoryItem, "id" | "lastUpdated">) => any;
+  deleteInventoryItem: (id: string) => any;
+  editInventoryItem: (
     id: string,
     updatedFields: Omit<InventoryItem, "id" | "lastUpdated">,
-  ) => void;
+  ) => any;
   addCategory?: (category: Category) => void;
   updateCategory?: (category: Category) => void;
   deleteCategory?: (id: string) => void;
@@ -28,49 +29,118 @@ const InventoryContext = createContext<InventoryContextType | undefined>(
 export const InventoryProvider = ({
   children,
 }: InventoryProviderProps): JSX.Element => {
-  const [inventory, setInventory] = useState<InventoryItem[]>(initialInventory);
+  const [inventory, setInventory] = useState<InventoryItem[]>();
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  const addItem = (
-    newItem: Omit<InventoryItem, "id" | "lastUpdated">,
-  ): void => {
-    const item: InventoryItem = {
-      ...newItem,
-      id: Date.now().toString(),
-      lastUpdated: new Date(),
-    };
-    setInventory((prevItems) => [...prevItems, item]);
+  const token = AsyncStorage.getItem("accessToken");
+
+  const fetchSuppliers = async () => {
+    try {
+      backendApi.setJwtToken(await token);
+      setSuppliers(await backendApi.getSuppliers().then((res) => res.data));
+    } catch (error) {
+      console.error("Failed to fetch suppliers:", error);
+    }
   };
 
-  const updateItem = (updatedItem: InventoryItem): void => {
-    setInventory((prevItems) =>
-      prevItems.map((item) =>
-        item.id === updatedItem.id
-          ? { ...updatedItem, lastUpdated: new Date() }
-          : item,
-      ),
-    );
+  const fetchCategories = async () => {
+    try {
+      backendApi.setJwtToken(await token);
+      setCategories(await backendApi.getCategories().then((res) => res.data));
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
   };
 
-  const deleteItem = (itemId: string): void => {
-    setInventory((prevItems) => prevItems.filter((item) => item.id !== itemId));
+  const fetchInventoryItems = async () => {
+    try {
+      backendApi.setJwtToken(await token);
+      setInventory(
+        await backendApi.getInventoryItems().then((res) => res.data),
+      );
+      console.log(inventory);
+    } catch (error) {
+      console.error("Failed to fetch inventory items:", error);
+    }
   };
 
-  const editItem = (
+  useEffect(() => {
+    Promise.all([fetchSuppliers(), fetchCategories(), fetchInventoryItems()]);
+  });
+
+  const addInventoryItem = async (
+    newItem: Omit<
+      InventoryItem,
+      "id" | "lastUpdated" | "supplier" | "category"
+    >,
+  ) => {
+    try {
+      const categoryObject = categories.find(
+        (cat) => cat.name === newItem.category_name,
+      );
+      const supplierObject = suppliers.find(
+        (sup) => sup.supplier_name === newItem.supplier_name,
+      );
+
+      const res = backendApi.createInventoryItem({
+        ...newItem,
+        supplier: supplierObject?.id,
+        category: categoryObject?.id,
+      });
+      console.log(res);
+      fetchInventoryItems();
+    } catch (error) {
+      console.log("Error adding item", error);
+    }
+  };
+
+  const editInventoryItem = (
     itemId: string,
-    updatedFields: Omit<InventoryItem, "id" | "lastUpdated">,
-  ): void => {
-    const updatedItem: InventoryItem = {
-      ...updatedFields,
-      id: itemId,
-      lastUpdated: new Date(),
-    };
-    updateItem(updatedItem);
+    updatedItem: Omit<
+      InventoryItem,
+      "id" | "lastUpdated" | "supplier" | "category"
+    >,
+  ) => {
+    try {
+      const categoryObject = categories.find(
+        (cat) => cat.name === updatedItem.category_name,
+      );
+      const supplierObject = suppliers.find(
+        (sup) => sup.supplier_name === updatedItem.supplier_name,
+      );
+
+      const res = backendApi.updateInventoryItem(itemId, {
+        ...updatedItem,
+        supplier: supplierObject?.id,
+        category: categoryObject?.id,
+      });
+      console.log(res);
+      fetchInventoryItems();
+    } catch (error) {
+      console.log("Error updating item", error);
+    }
+  };
+
+  const deleteInventoryItem = async (itemId: string) => {
+    try {
+      await backendApi.deleteInventoryItem(itemId);
+      setInventory((prev) =>
+        prev?.filter((item) => item.id !== parseInt(itemId)),
+      );
+    } catch (error) {
+      console.log("Error deleting item", error);
+    }
   };
 
   return (
     <InventoryContext
-      value={{ inventory, addItem, updateItem, deleteItem, editItem }}
+      value={{
+        inventory,
+        addInventoryItem,
+        deleteInventoryItem,
+        editInventoryItem,
+      }}
     >
       {children}
     </InventoryContext>

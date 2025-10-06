@@ -13,9 +13,6 @@ export default function TabLayout() {
 
           switch (route.name) {
             case "index":
-              iconName = focused ? "home" : "home-outline";
-              break;
-            case "dashboard":
               iconName = focused ? "view-dashboard" : "view-dashboard-outline";
               break;
             case "inventory":
@@ -46,8 +43,7 @@ export default function TabLayout() {
         headerTintColor: theme.colors.onSurface,
       })}
     >
-      <Tabs.Screen name="index" options={{ title: "Home" }} />
-      <Tabs.Screen name="dashboard" options={{ title: "Dashboard" }} />
+      <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
       <Tabs.Screen
         name="inventory"
         options={{ headerShown: false, title: "Inventory" }}

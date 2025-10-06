@@ -42,7 +42,7 @@ export const ItemDetailsScreen = ({
 }: ItemDetailsScreenProps): JSX.Element => {
   const theme = useTheme();
   const router = useRouter();
-  const { deleteItem } = useInventoryContext();
+  const { deleteInventoryItem } = useInventoryContext();
 
   const stockStatus: ValidStockStatus = getStockStatus(item);
   const stockColor =
@@ -59,7 +59,7 @@ export const ItemDetailsScreen = ({
         text: "Delete",
         style: "destructive",
         onPress: () => {
-          deleteItem(item.id);
+          deleteInventoryItem(item.id.toString());
           router.back();
         },
       },
@@ -67,32 +67,34 @@ export const ItemDetailsScreen = ({
   };
 
   const detailItems: Items[] = [
-    { icon: "tag", label: "Category", value: item.category },
+    { icon: "tag", label: "Category", value: item.category_name },
     {
       icon: "package",
       label: "Current Stock",
-      value: `${item.quantity} units`,
+      value: `${item.current_quantity} units`,
     },
     {
       icon: "alert-circle",
       label: "Minimum Stock",
-      value: `${item.minStock} units`,
+      value: `${item.minimum_stock_level} units`,
     },
     {
       icon: "currency-usd",
       label: "Unit Price",
-      value: formatCurrency(item.price),
+      value: formatCurrency(parseFloat(item.unit_price)),
     },
     {
       icon: "calculator",
       label: "Total Value",
-      value: formatCurrency(item.quantity * item.price),
+      value: formatCurrency(
+        item.current_quantity * parseFloat(item.unit_price),
+      ),
     },
-    { icon: "truck", label: "Supplier", value: item.supplier },
+    { icon: "truck", label: "Supplier", value: item.supplier_name },
     {
       icon: "calendar",
       label: "Last Updated",
-      value: formatDate(item.lastUpdated),
+      value: formatDate(item.lastUpdated || new Date()),
     },
   ];
 
@@ -105,7 +107,7 @@ export const ItemDetailsScreen = ({
               <Text
                 style={[styles.itemName, { color: theme.colors.onSurface }]}
               >
-                {item.name}
+                {item.item_name}
               </Text>
               <Chip
                 mode="outlined"

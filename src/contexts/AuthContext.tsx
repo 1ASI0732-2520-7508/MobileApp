@@ -7,6 +7,9 @@ import React, {
 } from "react";
 import { AuthState, LoginCredentials, User } from "../types/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import backendApi from "../infrastructure/backend-api";
+import { jwtDecode } from "jwt-decode";
+import { router } from "expo-router";
 
 interface AuthContextType extends AuthState {
   login: (
@@ -22,29 +25,6 @@ interface AuthProviderProps {
 // for large state object consider use a library like Zustand or Redux
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data for demonstration purposes
-
-const mockUser: User[] = [
-  {
-    id: "1",
-    email: "admin@inventorypro.com",
-    name: "John Admin",
-    role: "admin",
-  },
-  {
-    id: "2",
-    email: "manager@inventorypro.com",
-    name: "Sarah Manager",
-    role: "manager",
-  },
-  {
-    id: "3",
-    email: "demo@inventorypro.com",
-    name: "Demo User",
-    role: "employee",
-  },
-];
-
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -52,15 +32,19 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     isLoading: false,
   });
 
+  /**
+   * Check authentication state on mount
+   * In a real app, you might check a token's validity here
+   */
   useEffect(() => {
     checkAuthState();
   }, []);
 
   const checkAuthState = async () => {
     try {
-      const userData = await AsyncStorage.getItem("invetoryUser");
-      if (userData) {
-        const user: User = JSON.parse(userData);
+      const storedUser = await AsyncStorage.getItem("invetoryUser");
+      if (storedUser) {
+        const user: User = JSON.parse(storedUser);
         setAuthState({
           user,
           isAuthenticated: true,
@@ -80,23 +64,49 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   ): Promise<{ success: boolean; error?: string }> => {
     setAuthState((prevState) => ({ ...prevState, isLoading: true }));
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const user = mockUser.find((user) => user.email === credentials.email);
-
-    if (!user) {
-      setAuthState((prevState) => ({ ...prevState, isLoading: false }));
-      return { success: false, error: "User not found" };
-    }
-
-    if (credentials.password !== "password123") {
-      setAuthState((prevState) => ({ ...prevState, isLoading: false }));
-      return { success: false, error: "Invalid password" };
-    }
-
     try {
-      await AsyncStorage.setItem("invetoryUser", JSON.stringify(user));
+      const response = await backendApi.createAuthToken(credentials);
+
+      // Log the response for debugging purposes
+      console.log(response);
+
+      if (response.status !== 200) {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        return { success: false, error: "Invalid credentials" };
+      }
+
+      const jwtToken = response.data.access;
+
+      const payload = jwtDecode(jwtToken);
+
+      const user: User = {
+        id: (payload as any).user_id,
+        email: credentials.username,
+        username: (payload as any).username,
+        conpany_name: (payload as any).company_name,
+        group: (payload as any).groups[0],
+      };
+
+      console.log("Payload:", user);
+      await AsyncStorage.setItem("invetoryUser", JSON.stringify(user)).catch(
+        () => {
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+          return { success: false, error: "Failed to store user data" };
+        },
+      );
+
+      await AsyncStorage.setItem("accessToken", jwtToken).catch(() => {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        return { success: false, error: "Failed to store access token" };
+      });
+
+      await AsyncStorage.setItem("refreshToken", response.data.refresh).catch(
+        () => {
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+          return { success: false, error: "Failed to store refresh token" };
+        },
+      );
+
       setAuthState({
         user,
         isAuthenticated: true,
@@ -104,21 +114,24 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
       });
       return { success: true };
     } catch {
-      setAuthState((prevState) => ({ ...prevState, isLoading: false }));
-      return { success: false, error: "Failed to store user data" };
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      return { success: false, error: "Network Error." };
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
       await AsyncStorage.removeItem("invetoryUser");
+      await AsyncStorage.removeItem("accessToken");
+      await AsyncStorage.removeItem("refreshToken");
       setAuthState({
         user: null,
         isAuthenticated: false,
         isLoading: false,
       });
+      router.replace("/auth");
     } catch (error) {
-      console.log("Logout error: ", error);
+      console.log("Local Storage error: ", error);
     }
   };
 

@@ -1,20 +1,10 @@
-import { View, StyleSheet } from "react-native";
-import { Text } from "react-native-paper";
+import { InventoryProvider } from "@/src/contexts/InventoryContext";
+import { DashboardScreen } from "@/src/screens/DashboardScreen";
 
-export default function HomeScreen() {
+export default function Dashboard() {
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium">Welcome to Inventory Pro!</Text>
-      <Text>You are signed ind</Text>
-    </View>
+    <InventoryProvider>
+      <DashboardScreen />
+    </InventoryProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-});

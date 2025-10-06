@@ -3,11 +3,11 @@ import { Stats } from "../types/dashboard";
 import { formatCurrency } from "./stockUtils";
 
 type GenerateStatsParams = {
-  totalItems: number;
-  totalUnits: number;
-  totalValue: number;
-  lowStockItems: number;
-  outOfStockItems: number;
+  totalItems?: number;
+  totalUnits?: number;
+  totalValue?: number;
+  lowStockItems?: number;
+  outOfStockItems?: number;
   theme: MD3Theme;
 };
 
@@ -15,28 +15,28 @@ const generateStats = (params: GenerateStatsParams): Stats[] => {
   const stats = [
     {
       title: "Total Items",
-      value: params.totalItems.toString(),
+      value: params.totalItems ? params.totalItems.toString() : "",
       icon: "package-variant",
       color: params.theme.colors.primary,
       subtitle: `${params.totalUnits} units`,
     },
     {
       title: "Total Value",
-      value: formatCurrency(params.totalValue),
+      value: formatCurrency(params.totalValue || 0),
       icon: "currency-usd",
       color: params.theme.colors.secondary,
       subtitle: "Inventory worth",
     },
     {
       title: "Low Stock",
-      value: params.lowStockItems.toString(),
+      value: params.lowStockItems?.toString(),
       icon: "alert-circle",
       color: params.theme.colors.tertiary,
       subtitle: "Items need restock",
     },
     {
       title: "Out of Stock",
-      value: params.outOfStockItems.toString(),
+      value: params.outOfStockItems?.toString(),
       icon: "alert-octagon",
       color: params.theme.colors.error,
       subtitle: "Urgent attention",

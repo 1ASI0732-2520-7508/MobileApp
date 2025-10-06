@@ -1,17 +1,26 @@
 export interface User {
-  id: string;
+  id?: string;
   email: string;
-  name: string;
-  role: "admin" | "manager" | "employee";
+  username: string;
+  company_id?: number | null;
+  conpany_name?: string | null;
+  group: Role;
 }
 
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
+
+export type Role = "Admin" | "Manager" | "Employee";
 
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+}
+
+export interface AuthToken {
+  refresh: string;
+  access: string;
 }
