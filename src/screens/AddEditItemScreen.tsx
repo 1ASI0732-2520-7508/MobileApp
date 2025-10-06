@@ -85,12 +85,19 @@ export const AddEditItemScreen = ({
   }, [categories.length, refreshCategories, item]);
 
   useEffect(() => {
+    console.log("Suppliers in AddEditItemScreen:", suppliers);
     if (!suppliers.length) {
       refreshSuppliers().catch((error) =>
         console.warn("Failed to refresh suppliers", error),
       );
+    } else if (!item && !formData.supplier_name && suppliers.length > 0) {
+      // Set first supplier as default for new items
+      setFormData((prev) => ({
+        ...prev,
+        supplier_name: suppliers[0].supplier_name,
+      }));
     }
-  }, [refreshSuppliers, suppliers.length]);
+  }, [refreshSuppliers, suppliers.length, item]);
 
   const handleSave = async () => {
     if (isSubmitting) {
@@ -252,15 +259,43 @@ export const AddEditItemScreen = ({
               style={styles.input}
             />
 
-            <TextInput
-              label="Supplier *"
-              value={formData.supplier_name}
-              onChangeText={(text) =>
-                setFormData({ ...formData, supplier_name: text })
-              }
-              mode="outlined"
-              style={styles.input}
-            />
+            <Text
+              style={[styles.sectionLabel, { color: theme.colors.onSurface }]}
+            >
+              Supplier * ({suppliers.length} available)
+            </Text>
+            <View style={styles.categoryContainer}>
+              {suppliers.length > 0 ? (
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={suppliers}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => {
+                    console.log("Rendering supplier chip:", item);
+                    return (
+                      <Chip
+                        selected={formData.supplier_name === item.supplier_name}
+                        onPress={() => {
+                          console.log("Supplier selected:", item.supplier_name);
+                          setFormData({ ...formData, supplier_name: item.supplier_name });
+                        }}
+                        style={styles.categoryChip}
+                        mode="outlined"
+                        textStyle={styles.chipText}
+                      >
+                        {item.supplier_name}
+                      </Chip>
+                    );
+                  }}
+                  contentContainerStyle={styles.categoryList}
+                />
+              ) : (
+                <Text style={{ color: theme.colors.onSurfaceVariant }}>
+                  No suppliers available
+                </Text>
+              )}
+            </View>
 
             <TextInput
               label="Description"
