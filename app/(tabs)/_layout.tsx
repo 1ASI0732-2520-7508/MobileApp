@@ -1,9 +1,11 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tabs } from "expo-router";
 import { useTheme } from "react-native-paper";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 
 export default function TabLayout() {
   const theme = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Tabs
@@ -43,13 +45,13 @@ export default function TabLayout() {
         headerTintColor: theme.colors.onSurface,
       })}
     >
-      <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
+      <Tabs.Screen name="index" options={{ title: t("nav.dashboard") }} />
       <Tabs.Screen
         name="inventory"
-        options={{ headerShown: false, title: "Inventory" }}
+        options={{ headerShown: false, title: t("nav.inventory") }}
       />
-      <Tabs.Screen name="analytics" options={{ title: "Analytics" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen name="analytics" options={{ title: t("nav.analytics") }} />
+      <Tabs.Screen name="profile" options={{ title: t("nav.profile") }} />
     </Tabs>
   );
 }

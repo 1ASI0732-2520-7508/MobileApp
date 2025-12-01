@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, View, FlatList } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useInventoryContext } from "../contexts/InventoryContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 enum SortByOptions {
   Name = "name",
@@ -27,6 +28,7 @@ export const InventoryListScreen = (): JSX.Element => {
   const theme = useTheme();
   const router = useRouter();
   const { inventory: items, categories = [] } = useInventoryContext();
+  const { t } = useLanguage();
   console.log("Items:", items);
   console.log("Categories in InventoryListScreen:", categories);
 
@@ -81,7 +83,11 @@ export const InventoryListScreen = (): JSX.Element => {
               textStyle={{ color: stockColor }}
               style={{ borderColor: stockColor }}
             >
-              {stockStatus.replace("-", " ")}
+              {stockStatus === ValidStockStatus.InStock
+                ? t("itemDetails.inStock")
+                : stockStatus === ValidStockStatus.LowStock
+                  ? t("itemDetails.lowStock")
+                  : t("itemDetails.outOfStock")}
             </Chip>
           </View>
 
@@ -107,7 +113,7 @@ export const InventoryListScreen = (): JSX.Element => {
                   { color: theme.colors.onSurfaceVariant },
                 ]}
               >
-                {item.category}
+                {item.category_name}
               </Text>
             </View>
 
@@ -123,7 +129,7 @@ export const InventoryListScreen = (): JSX.Element => {
                   { color: theme.colors.onSurfaceVariant },
                 ]}
               >
-                {item.current_quantity} units
+                {item.current_quantity} {t("common.units")}
               </Text>
             </View>
 
@@ -153,7 +159,7 @@ export const InventoryListScreen = (): JSX.Element => {
     >
       <View style={styles.header}>
         <Searchbar
-          placeholder="Search inventory..."
+          placeholder={t("inventory.search")}
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchbar}
@@ -163,7 +169,7 @@ export const InventoryListScreen = (): JSX.Element => {
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={[{ id: "", category_name: "All" }, ...categories]}
+            data={[{ id: "", category_name: t("common.all") }, ...categories]}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => {
               console.log("Rendering category chip in list:", item);
@@ -171,10 +177,10 @@ export const InventoryListScreen = (): JSX.Element => {
                 <Chip
                   selected={
                     selectedCategory === item.category_name ||
-                    (item.category_name === "All" && !selectedCategory)
+                    (item.category_name === t("common.all") && !selectedCategory)
                   }
                   onPress={() =>
-                    setSelectedCategory(item.category_name === "All" ? "" : item.category_name)
+                    setSelectedCategory(item.category_name === t("common.all") ? "" : item.category_name)
                   }
                   style={styles.categoryChip}
                 >
@@ -194,7 +200,7 @@ export const InventoryListScreen = (): JSX.Element => {
                 onPress={() => setSortMenuVisible(true)}
                 icon="sort"
               >
-                Sort
+                {t("inventory.sort")}
               </Button>
             }
           >
@@ -203,21 +209,21 @@ export const InventoryListScreen = (): JSX.Element => {
                 setSortBy(SortByOptions.Name);
                 setSortMenuVisible(false);
               }}
-              title="Name"
+              title={t("inventory.sortByName")}
             />
             <Menu.Item
               onPress={() => {
                 setSortBy(SortByOptions.Quantity);
                 setSortMenuVisible(false);
               }}
-              title="Quantity"
+              title={t("inventory.sortByQuantity")}
             />
             <Menu.Item
               onPress={() => {
                 setSortBy(SortByOptions.Price);
                 setSortMenuVisible(false);
               }}
-              title="Price"
+              title={t("inventory.sortByPrice")}
             />
           </Menu>
         </View>

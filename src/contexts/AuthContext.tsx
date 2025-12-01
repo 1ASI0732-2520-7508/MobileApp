@@ -10,6 +10,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import backendApi from "../infrastructure/backend-api";
 import { jwtDecode } from "jwt-decode";
 import { router } from "expo-router";
+import { mockUser } from "../data/mockData";
+
+// Enable mock mode when backend is not available
+// Auto-enable if env var is set, or fallback to mock when backend has no users
+const USE_MOCK_MODE = process.env.EXPO_PUBLIC_USE_MOCK_MODE === "true";
 
 interface AuthContextType extends AuthState {
   login: (
@@ -64,11 +69,46 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   ): Promise<{ success: boolean; error?: string }> => {
     setAuthState((prevState) => ({ ...prevState, isLoading: true }));
 
+    // Mock mode: Use mock data for development
+    if (USE_MOCK_MODE) {
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      // Find matching mock user
+      const mockUserData = mockUser.find(
+        (u) => u.email.toLowerCase() === credentials.username.toLowerCase()
+      );
+      
+      if (mockUserData && credentials.password === "password123") {
+        const user: User = {
+          ...mockUserData,
+          conpany_name: "Demo Company",
+        };
+        
+        await AsyncStorage.setItem("invetoryUser", JSON.stringify(user));
+        await AsyncStorage.setItem("accessToken", "mock-token");
+        await AsyncStorage.setItem("refreshToken", "mock-refresh-token");
+        
+        setAuthState({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        return { success: true };
+      } else {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        return { 
+          success: false, 
+          error: "Credenciales inválidas. Usa: admin@inventorypro.com / password123" 
+        };
+      }
+    }
+
     try {
       const response = await backendApi.createAuthToken(credentials);
 
       // Log the response for debugging purposes
-      console.log(response);
+      console.log("Login response:", response);
 
       if (response.status !== 200) {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
@@ -113,9 +153,93 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
         isLoading: false,
       });
       return { success: true };
-    } catch {
+    } catch (error: any) {
       setAuthState((prev) => ({ ...prev, isLoading: false }));
-      return { success: false, error: "Network Error." };
+      
+      // Log full error for debugging
+      console.log("Login error:", error);
+      console.log("Error response:", error?.response?.data);
+      console.log("Error status:", error?.response?.status);
+      
+      // If backend fails, try mock mode automatically
+      if (error?.response?.status === 401) {
+        const errorMessage = error?.response?.data?.detail || 
+          error?.response?.data?.message || 
+          error?.response?.data?.error ||
+          "Credenciales inválidas";
+        
+        // If backend has no users, automatically try mock mode
+        if (errorMessage.includes("No active account")) {
+          console.log("Backend has no users, trying mock mode...");
+          
+          // Try mock login
+          const mockUserData = mockUser.find(
+            (u) => u.email.toLowerCase() === credentials.username.toLowerCase()
+          );
+          
+          if (mockUserData && credentials.password === "password123") {
+            const user: User = {
+              ...mockUserData,
+              conpany_name: "Demo Company",
+            };
+            
+            await AsyncStorage.setItem("invetoryUser", JSON.stringify(user));
+            await AsyncStorage.setItem("accessToken", "mock-token");
+            await AsyncStorage.setItem("refreshToken", "mock-refresh-token");
+            
+            setAuthState({
+              user,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return { success: true };
+          }
+          
+          return { 
+            success: false, 
+            error: "El backend no tiene usuarios. Usa: admin@inventorypro.com / password123 (modo demo)" 
+          };
+        }
+        
+        return { 
+          success: false, 
+          error: `${errorMessage}. Intenta con: admin@inventorypro.com / password123` 
+        };
+      }
+      
+      if (error?.response?.status === 404) {
+        return { 
+          success: false, 
+          error: "Endpoint no encontrado. Verifica la configuración del backend." 
+        };
+      }
+      
+      if (error?.response?.status === 500) {
+        return { 
+          success: false, 
+          error: "Error interno del servidor. El backend puede estar caído." 
+        };
+      }
+      
+      if (error?.response?.status) {
+        return { 
+          success: false, 
+          error: `Error del servidor (${error.response.status}): ${error?.response?.data?.detail || error?.response?.data?.message || 'Error desconocido'}` 
+        };
+      }
+      
+      if (error?.code === 'ECONNREFUSED' || error?.code === 'ERR_NETWORK') {
+        return { 
+          success: false, 
+          error: "No se puede conectar al servidor. Verifica que el backend esté activo." 
+        };
+      }
+      
+      if (error?.message) {
+        return { success: false, error: error.message };
+      }
+      
+      return { success: false, error: "Error de conexión. Verifica tu internet." };
     }
   };
 

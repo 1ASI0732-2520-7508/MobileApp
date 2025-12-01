@@ -3,11 +3,13 @@ import { InventoryProvider } from "@/src/contexts/InventoryContext";
 import { Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useTheme } from "react-native-paper";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 
 export default function InventoryLayout() {
   const theme = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -26,10 +28,10 @@ export default function InventoryLayout() {
           headerTitleStyle: { fontWeight: "bold" },
         }}
       >
-        <Stack.Screen name="index" options={{ title: "Inventory" }} />
-        <Stack.Screen name="[id]" options={{ title: "Item Details" }} />
-        <Stack.Screen name="add" options={{ title: "Add Item" }} />
-        <Stack.Screen name="edit/[id]" options={{ title: "Edit Item" }} />
+        <Stack.Screen name="index" options={{ title: t("inventory.title") }} />
+        <Stack.Screen name="[id]" options={{ title: t("inventory.itemDetails") }} />
+        <Stack.Screen name="add" options={{ title: t("inventory.addItem") }} />
+        <Stack.Screen name="edit/[id]" options={{ title: t("inventory.editItem") }} />
       </Stack>
     </InventoryProvider>
   );

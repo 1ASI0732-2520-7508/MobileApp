@@ -18,6 +18,7 @@ import { Alert, View, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useInventoryContext } from "../contexts/InventoryContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 // Types
 type Items = {
@@ -43,6 +44,7 @@ export const ItemDetailsScreen = ({
   const theme = useTheme();
   const router = useRouter();
   const { deleteInventoryItem } = useInventoryContext();
+  const { t } = useLanguage();
 
   const stockStatus: ValidStockStatus = getStockStatus(item);
   const stockColor =
@@ -53,10 +55,10 @@ export const ItemDetailsScreen = ({
         : theme.colors.error;
 
   const handleDelete = async () => {
-    Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("itemDetails.deleteItem"), t("itemDetails.deleteConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
           try {
@@ -64,8 +66,8 @@ export const ItemDetailsScreen = ({
             router.back();
           } catch (error) {
             Alert.alert(
-              "Delete Failed",
-              "Failed to delete the item. Please try again."
+              t("itemDetails.deleteItem"),
+              t("itemDetails.deleteFailed")
             );
           }
         },
@@ -74,33 +76,33 @@ export const ItemDetailsScreen = ({
   };
 
   const detailItems: Items[] = [
-    { icon: "tag", label: "Category", value: item.category_name },
+    { icon: "tag", label: t("itemDetails.category"), value: item.category_name },
     {
       icon: "package",
-      label: "Current Stock",
-      value: `${item.current_quantity} units`,
+      label: t("itemDetails.currentStock"),
+      value: `${item.current_quantity} ${t("common.units")}`,
     },
     {
       icon: "alert-circle",
-      label: "Minimum Stock",
-      value: `${item.minimum_stock_level} units`,
+      label: t("itemDetails.minimumStock"),
+      value: `${item.minimum_stock_level} ${t("common.units")}`,
     },
     {
       icon: "currency-usd",
-      label: "Unit Price",
+      label: t("itemDetails.unitPrice"),
       value: formatCurrency(parseFloat(item.unit_price)),
     },
     {
       icon: "calculator",
-      label: "Total Value",
+      label: t("itemDetails.totalValue"),
       value: formatCurrency(
         item.current_quantity * parseFloat(item.unit_price),
       ),
     },
-    { icon: "truck", label: "Supplier", value: item.supplier_name },
+    { icon: "truck", label: t("itemDetails.supplier"), value: item.supplier_name },
     {
       icon: "calendar",
-      label: "Last Updated",
+      label: t("itemDetails.lastUpdated"),
       value: formatDate(item.lastUpdated || new Date()),
     },
   ];
@@ -121,7 +123,11 @@ export const ItemDetailsScreen = ({
                 textStyle={{ color: stockColor }}
                 style={{ borderColor: stockColor }}
               >
-                {stockStatus.replace("-", " ")}
+                {stockStatus === ValidStockStatus.InStock
+                  ? t("itemDetails.inStock")
+                  : stockStatus === ValidStockStatus.LowStock
+                    ? t("itemDetails.lowStock")
+                    : t("itemDetails.outOfStock")}
               </Chip>
             </View>
 
@@ -141,7 +147,7 @@ export const ItemDetailsScreen = ({
             <Text
               style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
             >
-              Item Details
+              {t("itemDetails.itemDetails")}
             </Text>
 
             {detailItems.map((detail, index) => (
@@ -188,7 +194,7 @@ export const ItemDetailsScreen = ({
             style={styles.editButton}
             icon="pencil"
           >
-            Edit Item
+            {t("itemDetails.editItem")}
           </Button>
 
           <Button
@@ -198,7 +204,7 @@ export const ItemDetailsScreen = ({
             textColor={theme.colors.error}
             icon="delete"
           >
-            Delete Item
+            {t("itemDetails.deleteItem")}
           </Button>
         </View>
       </ScrollView>

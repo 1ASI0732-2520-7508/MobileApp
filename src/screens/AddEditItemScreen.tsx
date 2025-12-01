@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { Alert, StyleSheet, View, ScrollView, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useInventoryContext } from "../contexts/InventoryContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface AddEditItemScreenProps {
   item?: InventoryItem;
@@ -30,6 +31,7 @@ export const AddEditItemScreen = ({
     refreshCategories,
     refreshSuppliers,
   } = useInventoryContext();
+  const { t } = useLanguage();
 
   const isEditing = !!item; // Convert the existence of item to a boolean
 
@@ -108,47 +110,47 @@ export const AddEditItemScreen = ({
     const errors: string[] = [];
 
     if (!formData.item_name.trim()) {
-      errors.push("Item name is required");
+      errors.push(t("addEdit.itemNameRequired"));
     }
 
     if (!formData.category_name.trim()) {
-      errors.push("Category is required");
+      errors.push(t("addEdit.categoryRequired"));
     } else if (
       categories.length &&
       !categories.some((cat) => cat.category_name === formData.category_name)
     ) {
-      errors.push("Please select a valid category");
+      errors.push(t("addEdit.validCategory"));
     }
 
     if (!formData.supplier_name.trim()) {
-      errors.push("Supplier is required");
+      errors.push(t("addEdit.supplierRequired"));
     } else if (
       suppliers.length &&
       !suppliers.some((sup) => sup.supplier_name === formData.supplier_name)
     ) {
-      errors.push("Please select a valid supplier");
+      errors.push(t("addEdit.validSupplier"));
     }
 
     if (!formData.unit_price || formData.unit_price.trim() === "") {
-      errors.push("Unit price is required");
+      errors.push(t("addEdit.unitPriceRequired"));
     } else if (isNaN(parseFloat(formData.unit_price)) || parseFloat(formData.unit_price) < 0) {
-      errors.push("Unit price must be a valid positive number");
+      errors.push(t("addEdit.unitPriceValid"));
     }
 
     if (formData.current_quantity < 0) {
-      errors.push("Current quantity cannot be negative");
+      errors.push(t("addEdit.quantityNegative"));
     }
 
     if (formData.minimum_stock_level < 0) {
-      errors.push("Minimum stock level cannot be negative");
+      errors.push(t("addEdit.minStockNegative"));
     }
 
     // Show validation errors if any
     if (errors.length > 0) {
       Alert.alert(
-        "Validation Error",
+        t("addEdit.validationError"),
         errors.join("\n"),
-        [{ text: "OK" }]
+        [{ text: t("common.save") }]
       );
       return;
     }
@@ -164,7 +166,7 @@ export const AddEditItemScreen = ({
       router.back();
     } catch (error) {
       console.error("Failed to save item", error);
-      Alert.alert("Error", "Failed to save item. Please try again.");
+      Alert.alert(t("addEdit.validationError"), t("addEdit.saveFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -179,7 +181,7 @@ export const AddEditItemScreen = ({
         <Card style={styles.formCard}>
           <Card.Content>
             <TextInput
-              label="Item Name *"
+              label={t("addEdit.itemName")}
               value={formData.item_name}
               onChangeText={(text) =>
                 setFormData({ ...formData, item_name: text })
@@ -191,7 +193,7 @@ export const AddEditItemScreen = ({
             <Text
               style={[styles.sectionLabel, { color: theme.colors.onSurface }]}
             >
-              Category * ({categories.length} available)
+              {t("addEdit.category")} ({categories.length} {t("addEdit.categoryAvailable")})
             </Text>
             <View style={styles.categoryContainer}>
               {categories.length > 0 ? (
@@ -221,14 +223,14 @@ export const AddEditItemScreen = ({
                 />
               ) : (
                 <Text style={{ color: theme.colors.onSurfaceVariant }}>
-                  No categories available
+                  {t("inventory.noCategories")}
                 </Text>
               )}
             </View>
 
             <View style={styles.row}>
               <TextInput
-                label="Current Quantity"
+                label={t("addEdit.currentQuantity")}
                 value={
                   formData.current_quantity === 0 && !item
                     ? ""
@@ -247,7 +249,7 @@ export const AddEditItemScreen = ({
               />
 
               <TextInput
-                label="Minimum Stock"
+                label={t("addEdit.minimumStock")}
                 value={
                   formData.minimum_stock_level === 0 && !item
                     ? ""
@@ -267,7 +269,7 @@ export const AddEditItemScreen = ({
             </View>
 
             <TextInput
-              label="Unit Price"
+              label={t("addEdit.unitPrice")}
               value={formData.unit_price || ""}
               onChangeText={(text) =>
                 setFormData({ ...formData, unit_price: text })
@@ -282,7 +284,7 @@ export const AddEditItemScreen = ({
             <Text
               style={[styles.sectionLabel, { color: theme.colors.onSurface }]}
             >
-              Supplier * ({suppliers.length} available)
+              {t("addEdit.supplier")} ({suppliers.length} {t("addEdit.supplierAvailable")})
             </Text>
             <View style={styles.categoryContainer}>
               {suppliers.length > 0 ? (
@@ -312,13 +314,13 @@ export const AddEditItemScreen = ({
                 />
               ) : (
                 <Text style={{ color: theme.colors.onSurfaceVariant }}>
-                  No suppliers available
+                  {t("inventory.noSuppliers")}
                 </Text>
               )}
             </View>
 
             <TextInput
-              label="Description"
+              label={t("addEdit.description")}
               value={formData.description}
               onChangeText={(text) =>
                 setFormData({ ...formData, description: text })
@@ -340,7 +342,7 @@ export const AddEditItemScreen = ({
             disabled={isSubmitting}
             icon={isEditing ? "content-save" : "plus"}
           >
-            {isEditing ? "Update Item" : "Add Item"}
+            {isEditing ? t("addEdit.updateItem") : t("addEdit.addItem")}
           </Button>
 
           <Button
@@ -348,7 +350,7 @@ export const AddEditItemScreen = ({
             onPress={() => router.back()}
             style={styles.cancelButton}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
         </View>
       </ScrollView>

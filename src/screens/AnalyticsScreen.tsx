@@ -4,6 +4,7 @@ import { useTheme, Card, Text, SegmentedButtons } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useInventoryContext } from "../contexts/InventoryContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import { getStockStatus, formatCurrency } from "../utils/stockUtils";
 import { ValidStockStatus, InventoryItem } from "../types/inventory";
 
@@ -12,6 +13,7 @@ type TimeFilter = "all" | "7d" | "30d" | "90d";
 export const AnalyticsScreen = (): JSX.Element => {
   const theme = useTheme();
   const { inventory: items, categories } = useInventoryContext();
+  const { t } = useLanguage();
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
 
@@ -157,46 +159,46 @@ export const AnalyticsScreen = (): JSX.Element => {
 
   const statCards = [
     {
-      title: "Total Portfolio Value",
+      title: t("analytics.totalPortfolioValue"),
       value: formatCurrency(analytics.totalValue),
       icon: "cash-multiple",
       color: theme.colors.primary,
-      subtitle: `${analytics.totalItems} unique items`,
+      subtitle: `${analytics.totalItems} ${t("analytics.uniqueItems")}`,
     },
     {
-      title: "Total Units",
+      title: t("analytics.totalUnits"),
       value: analytics.totalQuantity.toLocaleString(),
       icon: "package-variant-closed",
       color: theme.colors.secondary,
-      subtitle: `Avg: ${formatCurrency(analytics.priceAnalysis.average)}`,
+      subtitle: `${t("analytics.avg")}: ${formatCurrency(analytics.priceAnalysis.average)}`,
     },
     {
-      title: "Stock Health",
+      title: t("analytics.stockHealth"),
       value: `${Math.round((analytics.stockAnalysis.inStock / analytics.totalItems) * 100 || 0)}%`,
       icon: "trending-up",
       color: "#10B981",
-      subtitle: `${analytics.stockAnalysis.inStock} items healthy`,
+      subtitle: `${analytics.stockAnalysis.inStock} ${t("analytics.itemsHealthy")}`,
     },
     {
-      title: "Attention Needed",
+      title: t("analytics.attentionNeeded"),
       value: (
         analytics.stockAnalysis.lowStock + analytics.stockAnalysis.outOfStock
       ).toString(),
       icon: "alert-circle",
       color: "#F59E0B",
-      subtitle: `${analytics.stockAnalysis.outOfStock} critical`,
+      subtitle: `${analytics.stockAnalysis.outOfStock} ${t("analytics.critical")}`,
     },
   ];
 
   const timeFilterButtons = [
-    { value: "all", label: "All" },
+    { value: "all", label: t("common.all") },
     { value: "7d", label: "7d" },
     { value: "30d", label: "30d" },
     { value: "90d", label: "90d" },
   ];
 
   const categoryButtons = [
-    { value: "", label: "All" },
+    { value: "", label: t("common.all") },
     ...(categories
       ?.filter((cat) => cat.category_name)
       .map((cat) => ({
@@ -219,7 +221,7 @@ export const AnalyticsScreen = (): JSX.Element => {
                 color={theme.colors.onSurfaceVariant}
               />
               <Text style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
-                No Data Available
+                {t("analytics.noData")}
               </Text>
               <Text
                 style={[
@@ -227,7 +229,7 @@ export const AnalyticsScreen = (): JSX.Element => {
                   { color: theme.colors.onSurfaceVariant },
                 ]}
               >
-                Add some inventory items to see analytics
+                {t("analytics.noDataDesc")}
               </Text>
             </Card.Content>
           </Card>
@@ -244,7 +246,7 @@ export const AnalyticsScreen = (): JSX.Element => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>
-            Analytics
+            {t("analytics.title")}
           </Text>
           <Text
             style={[
@@ -252,7 +254,7 @@ export const AnalyticsScreen = (): JSX.Element => {
               { color: theme.colors.onSurfaceVariant },
             ]}
           >
-            Comprehensive inventory insights
+            {t("analytics.subtitle")}
           </Text>
         </View>
 
@@ -264,7 +266,7 @@ export const AnalyticsScreen = (): JSX.Element => {
               { color: theme.colors.onSurfaceVariant },
             ]}
           >
-            Time Period
+            {t("analytics.timePeriod")}
           </Text>
           <SegmentedButtons
             value={timeFilter}
@@ -281,7 +283,7 @@ export const AnalyticsScreen = (): JSX.Element => {
                   { color: theme.colors.onSurfaceVariant },
                 ]}
               >
-                Category
+                {t("analytics.category")}
               </Text>
               <ScrollView
                 horizontal
@@ -345,7 +347,7 @@ export const AnalyticsScreen = (): JSX.Element => {
                     { color: theme.colors.onSurface },
                   ]}
                 >
-                  Category Performance
+                  {t("analytics.categoryPerformance")}
                 </Text>
                 <MaterialCommunityIcons
                   name="chart-bar"
@@ -409,7 +411,7 @@ export const AnalyticsScreen = (): JSX.Element => {
                         { color: theme.colors.onSurfaceVariant },
                       ]}
                     >
-                      {category.items} items
+                      {category.items} {t("common.items")}
                     </Text>
                     <Text
                       style={[
@@ -417,7 +419,7 @@ export const AnalyticsScreen = (): JSX.Element => {
                         { color: theme.colors.onSurfaceVariant },
                       ]}
                     >
-                      {category.quantity} units
+                      {category.quantity} {t("common.units")}
                     </Text>
                   </View>
                 </View>
@@ -437,7 +439,7 @@ export const AnalyticsScreen = (): JSX.Element => {
                     { color: theme.colors.onSurface },
                   ]}
                 >
-                  Supplier Distribution
+                  {t("analytics.supplierDistribution")}
                 </Text>
                 <MaterialCommunityIcons
                   name="trending-up"
@@ -476,7 +478,7 @@ export const AnalyticsScreen = (): JSX.Element => {
                           { color: theme.colors.onSurfaceVariant },
                         ]}
                       >
-                        {supplier.items} items • {supplier.quantity} units
+                        {supplier.items} {t("common.items")} • {supplier.quantity} {t("common.units")}
                       </Text>
                     </View>
                   </View>
@@ -511,7 +513,7 @@ export const AnalyticsScreen = (): JSX.Element => {
               <Text
                 style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
               >
-                Stock Status Distribution
+                {t("analytics.stockStatusDistribution")}
               </Text>
               <MaterialCommunityIcons
                 name="package-variant-closed"
@@ -532,13 +534,13 @@ export const AnalyticsScreen = (): JSX.Element => {
                 <Text style={[styles.stockStatusValue, { color: "#10B981" }]}>
                   {analytics.stockAnalysis.inStock}
                 </Text>
-                <Text style={styles.stockStatusLabel}>In Stock</Text>
+                <Text style={styles.stockStatusLabel}>{t("itemDetails.inStock")}</Text>
                 <Text style={styles.stockStatusPercentage}>
                   {Math.round(
                     (analytics.stockAnalysis.inStock / analytics.totalItems) *
                       100 || 0,
                   )}
-                  % of inventory
+                  {t("analytics.percentOfInventory")}
                 </Text>
               </View>
 
@@ -553,13 +555,13 @@ export const AnalyticsScreen = (): JSX.Element => {
                 <Text style={[styles.stockStatusValue, { color: "#F59E0B" }]}>
                   {analytics.stockAnalysis.lowStock}
                 </Text>
-                <Text style={styles.stockStatusLabel}>Low Stock</Text>
+                <Text style={styles.stockStatusLabel}>{t("itemDetails.lowStock")}</Text>
                 <Text style={styles.stockStatusPercentage}>
                   {Math.round(
                     (analytics.stockAnalysis.lowStock / analytics.totalItems) *
                       100 || 0,
                   )}
-                  % needs reorder
+                  {t("analytics.percentNeedsReorder")}
                 </Text>
               </View>
 
@@ -574,14 +576,14 @@ export const AnalyticsScreen = (): JSX.Element => {
                 <Text style={[styles.stockStatusValue, { color: "#EF4444" }]}>
                   {analytics.stockAnalysis.outOfStock}
                 </Text>
-                <Text style={styles.stockStatusLabel}>Out of Stock</Text>
+                <Text style={styles.stockStatusLabel}>{t("itemDetails.outOfStock")}</Text>
                 <Text style={styles.stockStatusPercentage}>
                   {Math.round(
                     (analytics.stockAnalysis.outOfStock /
                       analytics.totalItems) *
                       100 || 0,
                   )}
-                  % critical
+                  {t("analytics.percentCritical")}
                 </Text>
               </View>
             </View>
@@ -595,7 +597,7 @@ export const AnalyticsScreen = (): JSX.Element => {
               <Text
                 style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
               >
-                Price Analysis
+                {t("analytics.priceAnalysis")}
               </Text>
               <MaterialCommunityIcons
                 name="cash"
@@ -606,7 +608,7 @@ export const AnalyticsScreen = (): JSX.Element => {
 
             <View style={styles.priceAnalysisGrid}>
               <View style={[styles.priceCard, styles.priceCardBlue]}>
-                <Text style={styles.priceCardLabel}>Highest Priced Item</Text>
+                <Text style={styles.priceCardLabel}>{t("analytics.highestPricedItem")}</Text>
                 <Text style={styles.priceCardItemName}>
                   {analytics.priceAnalysis.highest?.item_name || "N/A"}
                 </Text>
@@ -620,15 +622,15 @@ export const AnalyticsScreen = (): JSX.Element => {
               </View>
 
               <View style={[styles.priceCard, styles.priceCardGreen]}>
-                <Text style={styles.priceCardLabel}>Average Unit Price</Text>
-                <Text style={styles.priceCardItemName}>Across all items</Text>
+                <Text style={styles.priceCardLabel}>{t("analytics.averageUnitPrice")}</Text>
+                <Text style={styles.priceCardItemName}>{t("analytics.acrossAllItems")}</Text>
                 <Text style={styles.priceCardValue}>
                   {formatCurrency(analytics.priceAnalysis.average)}
                 </Text>
               </View>
 
               <View style={[styles.priceCard, styles.priceCardPurple]}>
-                <Text style={styles.priceCardLabel}>Lowest Priced Item</Text>
+                <Text style={styles.priceCardLabel}>{t("analytics.lowestPricedItem")}</Text>
                 <Text style={styles.priceCardItemName}>
                   {analytics.priceAnalysis.lowest?.item_name || "N/A"}
                 </Text>

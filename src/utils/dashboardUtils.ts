@@ -9,37 +9,38 @@ type GenerateStatsParams = {
   lowStockItems?: number;
   outOfStockItems?: number;
   theme: MD3Theme;
+  t: (key: string) => string;
 };
 
 const generateStats = (params: GenerateStatsParams): Stats[] => {
   const stats = [
     {
-      title: "Total Items",
+      title: params.t("dashboard.totalItems"),
       value: params.totalItems ? params.totalItems.toString() : "",
       icon: "package-variant",
       color: params.theme.colors.primary,
-      subtitle: `${params.totalUnits} units`,
+      subtitle: `${params.totalUnits} ${params.t("dashboard.units")}`,
     },
     {
-      title: "Total Value",
+      title: params.t("dashboard.totalValue"),
       value: formatCurrency(params.totalValue || 0),
       icon: "currency-usd",
       color: params.theme.colors.secondary,
-      subtitle: "Inventory worth",
+      subtitle: params.t("dashboard.inventoryWorth"),
     },
     {
-      title: "Low Stock",
+      title: params.t("dashboard.lowStock"),
       value: params.lowStockItems?.toString(),
       icon: "alert-circle",
       color: params.theme.colors.tertiary,
-      subtitle: "Items need restock",
+      subtitle: params.t("dashboard.itemsNeedRestock"),
     },
     {
-      title: "Out of Stock",
+      title: params.t("dashboard.outOfStock"),
       value: params.outOfStockItems?.toString(),
       icon: "alert-octagon",
       color: params.theme.colors.error,
-      subtitle: "Urgent attention",
+      subtitle: params.t("dashboard.urgentAttention"),
     },
   ];
 

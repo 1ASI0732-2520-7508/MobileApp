@@ -1,6 +1,7 @@
 import { JSX } from "react";
 import { Text, Card, useTheme } from "react-native-paper";
 import { useInventoryContext } from "../contexts/InventoryContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getStockStatus, formatCurrency } from "../utils/stockUtils";
 import { ValidStockStatus } from "../types/inventory";
@@ -11,6 +12,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 export const DashboardScreen = (): JSX.Element => {
   const theme = useTheme();
   const { inventory: items } = useInventoryContext();
+  const { t } = useLanguage();
 
   const totalItems = items?.length;
 
@@ -38,6 +40,7 @@ export const DashboardScreen = (): JSX.Element => {
     lowStockItems,
     outOfStockItems,
     theme,
+    t,
   });
 
   return (
@@ -90,7 +93,7 @@ export const DashboardScreen = (): JSX.Element => {
             <Text
               style={[styles.sectionTitle, { color: theme.colors.onSurface }]}
             >
-              Recent Items
+              {t("dashboard.recentItems")}
             </Text>
 
             {items?.slice(0, 5).map((item) => (

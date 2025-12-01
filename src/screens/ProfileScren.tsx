@@ -6,20 +6,26 @@ import {
   List,
   Divider,
   Button,
+  Switch,
 } from "react-native-paper";
 import { useAuth } from "../contexts/AuthContext";
+import { useAppTheme } from "../contexts/ThemeContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import { Alert, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import React from "react";
 
 export const ProfileScreen = () => {
   const theme = useTheme();
   const { user, logout } = useAuth();
+  const { isDarkMode, setDarkMode } = useAppTheme();
+  const { language, setLanguage, t } = useLanguage();
 
   const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("profile.logout"), t("profile.logoutConfirm"), [
+      { text: t("profile.cancel"), style: "cancel" },
       {
-        text: "Logout",
+        text: t("profile.logout"),
         style: "destructive",
         onPress: async () => {
           try {
@@ -68,32 +74,56 @@ export const ProfileScreen = () => {
 
         <Card style={styles.menuCard}>
           <List.Item
-            title="Account Settings"
-            description="Manage your account preferences"
+            title={t("profile.accountSettings")}
+            description={t("profile.accountSettingsDesc")}
             left={(props) => <List.Icon {...props} icon="account-cog" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => {}}
           />
           <Divider />
           <List.Item
-            title="Notifications"
-            description="Configure notification settings"
+            title={t("profile.darkMode")}
+            description={t("profile.darkModeDesc")}
+            left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
+            right={() => (
+              <Switch
+                value={isDarkMode}
+                onValueChange={setDarkMode}
+              />
+            )}
+          />
+          <Divider />
+          <List.Item
+            title={t("profile.language")}
+            description={language === 'es' ? t("profile.spanish") : t("profile.english")}
+            left={(props) => <List.Icon {...props} icon="translate" />}
+            right={() => (
+              <Switch
+                value={language === 'en'}
+                onValueChange={(value) => setLanguage(value ? 'en' : 'es')}
+              />
+            )}
+          />
+          <Divider />
+          <List.Item
+            title={t("profile.notifications")}
+            description={t("profile.notificationsDesc")}
             left={(props) => <List.Icon {...props} icon="bell" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => {}}
           />
           <Divider />
           <List.Item
-            title="Help & Support"
-            description="Get help and contact support"
+            title={t("profile.helpSupport")}
+            description={t("profile.helpSupportDesc")}
             left={(props) => <List.Icon {...props} icon="help-circle" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => {}}
           />
           <Divider />
           <List.Item
-            title="About"
-            description="App version and information"
+            title={t("profile.about")}
+            description={t("profile.aboutDesc")}
             left={(props) => <List.Icon {...props} icon="information" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => {}}
@@ -107,7 +137,7 @@ export const ProfileScreen = () => {
           textColor={theme.colors.error}
           icon="logout"
         >
-          Logout
+          {t("profile.logout")}
         </Button>
       </ScrollView>
     </SafeAreaView>
